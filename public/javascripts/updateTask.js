@@ -10,8 +10,10 @@ var cheerio = require("cheerio");
 var reg_saison_weeks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 var post_saison_weeks = [18, 19, 20, 22];
 var saison_parts = ['REG', 'POST'];
-var saison_years = [2016];
+var saison_year = 2017;
 var request_string = 'http://www.nfl.com/ajax/scorestrip?season=';
+
+//http://www.nfl.com/ajax/scorestrip?season=2017&seasonType=REG&week=1
 
 var exports = module.exports;
 
@@ -31,37 +33,25 @@ exports.startUpdateTask = function () {
 };
 
 function updateSchedule() {
-    saison_years.forEach(function (year) {
-        saison_parts.forEach(function (spart) {
-            var weeks;
-            switch (spart) {
-                case 'REG' :
-                    weeks = reg_saison_weeks;
-                    break;
-                case 'POST' :
-                    weeks = post_saison_weeks;
-                    break;
-                default :
-                    break;
-            }
+    saison_parts.forEach(function (spart) {
+        var weeks = spart === 'REG' ? reg_saison_weeks : post_saison_weeks;
 
-            weeks.forEach(function (week) {
-                request(replaceValuesInSring(year, spart, week), function (error, response, body) {
-                    utils.handleInfo('Update schedule for week ' + week + ' in Part ' + spart + ' for year ' + year);
-                    if (!error && response.statusCode == 200) {
-                        parseString(body, function (err, result) {
-                            if (result.ss !== '') {
-                                result.ss.gms[0].g.forEach(function (game) {
-                                    checkIfGameAlreadyPresent(game, result.ss.gms[0].$.w);
-                                });
-                            }
-                        });
-                    }
-                    else {
-                        utils.handleError('Failed request to NFL rest.', error);
-                    }
-                });
-            })
+        weeks.forEach(function (week) {
+            request(replaceValuesInSring(saison_year, spart, week), function (error, response, body) {
+                utils.handleInfo('Update schedule for week ' + week + ' in Part ' + spart + ' for year ' + saison_year);
+                if (!error && response.statusCode === 200) {
+                    parseString(body, function (err, result) {
+                        if (result.ss !== '') {
+                            result.ss.gms[0].g.forEach(function (game) {
+                                checkIfGameAlreadyPresent(game, result.ss.gms[0].$.w);
+                            });
+                        }
+                    });
+                }
+                else {
+                    utils.handleError('Failed request to NFL rest.', error);
+                }
+            });
         })
     });
 }
@@ -93,11 +83,11 @@ function checkIfGameAlreadyPresent(game, week) {
                         insertNewGame(game, week);
                     }
 
-                    if (week == 20) {
+                    if (week === 20) {
                         updateAFCNFCWinner(game);
                     }
 
-                    if (week == 22) {
+                    if (week === 22) {
                         updateSuperBowlWinner(game);
                     }
                 }
@@ -178,14 +168,7 @@ function insertNewPrediction(gameid) {
 
 function updateAFCNFCWinner(game) {
     if (game.$.q !== 'P') {
-        var team;
-
-        if (game.$.hs > game.$.vs) {
-            team = game.$.h;
-        }
-        else {
-            team = game.$.v;
-        }
+        var team = game.$.hs > game.$.vs ? game.$.h : game.$.v;
 
         utils.pool.getConnection(function (err, connection) {
             if (err) {
@@ -203,14 +186,7 @@ function updateAFCNFCWinner(game) {
                         if (result[0] !== undefined) {
                             var teamId = result[0].team_id;
                             var teamDivision = result[0].team_division;
-                            var inserts;
-
-                            if (teamDivision == 'afc') {
-                                inserts = ['afc_winner', teamId];
-                            }
-                            else {
-                                inserts = ['nfc_winner', teamId];
-                            }
+                            var inserts = teamDivision === 'afc' ? ['afc_winner', teamId] : ['nfc_winner', teamId];
 
                             sql = "UPDATE predictions_plus " +
                                 "SET ?? = ? " +
@@ -232,14 +208,7 @@ function updateAFCNFCWinner(game) {
 
 function updateSuperBowlWinner(game) {
     if (game.$.q !== 'P') {
-        var team;
-
-        if (game.$.hs > game.$.vs) {
-            team = game.$.h;
-        }
-        else {
-            team = game.$.v;
-        }
+        var team = game.$.hs > game.$.vs ? game.$.h : game.$.v;
 
         utils.pool.getConnection(function (err, connection) {
             if (err) {
@@ -269,7 +238,7 @@ function updateStandings() {
     var teamStanding;
 
     requestWebsite('http://www.nfl.com/standings', function (error, response, html) {
-        if (!error && response.statusCode == 200) {
+        if (!error && response.statusCode === 200) {
             var $ = cheerio.load(html);
             $('tr.tbdy1').each(function () {
 
@@ -277,10 +246,10 @@ function updateStandings() {
 
                 var tableColumns = $(this).find('td');
                 tableColumns.each(function (i, element) {
-                    if (i < 5 || i == 11) {
+                    if (i < 5 || i === 11) {
                         switch (i) {
                             case 0: {
-                                if ($(this).text().trim().indexOf('-') != -1) {
+                                if ($(this).text().trim().indexOf('-') !== -1) {
                                     prefix = $(this).text().trim().charAt(0);
                                 }
                                 teamname = $(this).find('a').text().trim();
@@ -351,7 +320,7 @@ function insertIntoStandingsTable(standings) {
                         if (i < standings.length) {
                             var standing = standings[i];
                             var sql = "INSERT INTO standings (standing_id, team_id, prefix, games, score, div_games) VALUES (?, (SELECT team_id FROM teams WHERE team_name=?), ?, ?, ?, ?);";
-                            var inserts = [i + 1, standing.teamname, (standing.prefix == '' ? null : standing.prefix), standing.games, standing.score, standing.div_games];
+                            var inserts = [i + 1, standing.teamname, (standing.prefix === '' ? null : standing.prefix), standing.games, standing.score, standing.div_games];
                             sql = mysql.format(sql, inserts);
                             connection.query(sql, function (err) {
                                 if (err) {
@@ -375,7 +344,7 @@ function insertIntoStandingsTable(standings) {
 
 function updatePredictionsPlus() {
     requestWebsite('http://www.nfl.com/stats/team?seasonId=' + saison_years + '&seasonType=' + saison_parts[0], function (error, response, html) {
-        if (!error && response.statusCode == 200) {
+        if (!error && response.statusCode === 200) {
             var $ = cheerio.load(html);
 
             var bestOffenseRow = $('#r1c1_1');

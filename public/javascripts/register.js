@@ -31,12 +31,8 @@ exports.nameExisting = function (req, res) {
                 }
                 else {
                     resp.result = "success";
-                    if (rows.length > 0) {
-                        resp.message = "username_already_used";
-                    }
-                    else {
-                        resp.message = "username_unused";
-                    }
+                    resp.message = rows.length > 0 ? "username_already_used" : "username_unused";
+
                     utils.sendResponse(res, resp, connection, 200);
                 }
             });

@@ -37,7 +37,7 @@ app.post('/registerUser', function (req, res) {
     register.registerUser(req, res);
 });
 
-app.post('/loginUser', (req, res) => {
+app.post('/loginUser', function (req, res) {
     login.loginUser(req, res);
 });
 

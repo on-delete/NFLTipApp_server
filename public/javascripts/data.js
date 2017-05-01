@@ -98,7 +98,7 @@ function calculateRanking(res, resp, uuid) {
                                                             }
                                                             else {
                                                                 if (result !== undefined) {
-                                                                    if (result[0].userid == 3) {
+                                                                    if (result[0].userid === 3) {
                                                                         defaultRow = result[0];
                                                                         userRow = result[1];
                                                                     } else {
@@ -290,7 +290,7 @@ function getPredictionPlus(resp, res, connection, uuid) {
             else {
                 if (rows !== undefined) {
                     var predictionsPlus = [];
-                    if (rows[0].userid == 3) {
+                    if (rows[0].userid === 3) {
                         defaultRow = rows[0];
                         userRow = rows[1];
                     } else {
@@ -457,7 +457,7 @@ exports.getAllPredictionsPlusForState = function (req, res) {
                             var tempObject = {
                                 "username": actualRow.username,
                                 "userid": actualRow.userid,
-                                "teamprefix": actualRow.teamprefix == null ? "" : actualRow.teamprefix
+                                "teamprefix": actualRow.teamprefix === null ? "" : actualRow.teamprefix
                             };
                             predictionsList.push(tempObject);
                         }
