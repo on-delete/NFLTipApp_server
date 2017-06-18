@@ -29,6 +29,11 @@ app.use('/', index);
 /* Uncomment if automatic updates should be triggered again */
 //updateTask.startUpdateTask();
 
+app.post('/startUpdate', function (req, res) {
+    updateTask.update();
+    res.end();
+});
+
 app.post('/nameExisting', function (req, res) {
     register.nameExisting(req, res);
 });

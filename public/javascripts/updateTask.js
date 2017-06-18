@@ -26,10 +26,14 @@ exports.startUpdateTask = function () {
     var j = schedule.scheduleJob(rule, function () {
         var d = new Date();
         utils.handleInfo('new update is started at ' + d);
-        updateSchedule();
-        updateStandings();
-        updatePredictionsPlus();
+        update();
     });
+};
+
+exports.update = function () {
+    updateSchedule();
+    updateStandings();
+    updatePredictionsPlus();
 };
 
 function updateSchedule() {
@@ -237,7 +241,7 @@ function updateStandings() {
     var standings = [];
     var teamStanding;
 
-    requestWebsite('http://www.nfl.com/standings', function (error, response, html) {
+    requestWebsite('http://www.nfl.com/standings?category=div&season='+ saison_year +'-'+ saison_parts[0] +'&split=Overall', function (error, response, html) {
         if (!error && response.statusCode === 200) {
             var $ = cheerio.load(html);
             $('tr.tbdy1').each(function () {
@@ -319,6 +323,10 @@ function insertIntoStandingsTable(standings) {
                         i++;
                         if (i < standings.length) {
                             var standing = standings[i];
+                            if(standing.teamname === "San Diego Chargers"){
+                                standing.teamname = "Los Angeles Chargers";
+                            }
+
                             var sql = "INSERT INTO standings (standing_id, team_id, prefix, games, score, div_games) VALUES (?, (SELECT team_id FROM teams WHERE team_name=?), ?, ?, ?, ?);";
                             var inserts = [i + 1, standing.teamname, (standing.prefix === '' ? null : standing.prefix), standing.games, standing.score, standing.div_games];
                             sql = mysql.format(sql, inserts);
@@ -343,7 +351,7 @@ function insertIntoStandingsTable(standings) {
 }
 
 function updatePredictionsPlus() {
-    requestWebsite('http://www.nfl.com/stats/team?seasonId=' + saison_years + '&seasonType=' + saison_parts[0], function (error, response, html) {
+    requestWebsite('http://www.nfl.com/stats/team?seasonId=' + saison_year + '&seasonType=' + saison_parts[0], function (error, response, html) {
         if (!error && response.statusCode === 200) {
             var $ = cheerio.load(html);
 
