@@ -26,7 +26,7 @@ var exports = module.exports;
 exports.pool = mysql.createPool({
     host: 'localhost',
     user: 'andredb',
-    password: 'database123',
+    password: 'i5Qby*19',
     database: 'nfltipappdb'
 });
 

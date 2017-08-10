@@ -9,6 +9,7 @@ var register = require('./public/javascripts/register');
 var updateTask = require('./public/javascripts/updateTask');
 var data = require('./public/javascripts/data');
 var update = require('./public/javascripts/updates');
+var password = require('./public/javascripts/password');
 
 var index = require('./routes/index');
 
@@ -64,6 +65,18 @@ app.post('/updatePrediction', function (req, res) {
 
 app.post('/updatePredictionPlus', function (req, res) {
     update.updatePredictionPlus(req, res);
+});
+
+app.post('/resetPassword', function (req, res) {
+    password.recoveryPassword(req, res);
+});
+
+app.get('/resetPassword', function (req, res) {
+    password.renderWebsite(req, res);
+});
+
+app.post('/resetPasswordInternal', function (req, res) {
+    register.updatePassword(req, res);
 });
 
 // catch 404 and forward to error handler

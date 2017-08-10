@@ -8,8 +8,9 @@ var app = require('../app');
 var debug = require('debug')('nfltipapp-server:server');
 var https = require('https');
 var fs = require('fs');
-var key = fs.readFileSync(__dirname + '/server-key.pem');
-var cert = fs.readFileSync(__dirname + '/server-cert.pem');
+var sslPath = '/etc/letsencrypt/live/www.rocciberge.de';
+var key = fs.readFileSync(sslPath + '/privkey.pem');
+var cert = fs.readFileSync(sslPath + '/fullchain.pem');
 
 var https_options = {
   key: key,

@@ -1,4 +1,5 @@
 var utils = require('./utils');
+var password = require('./password');
 var mysql = require('mysql');
 var bcrypt = require('bcrypt-nodejs');
 var winston = require('winston');
@@ -113,3 +114,48 @@ function initPredictionsPlusForNewUser(res, resp, userId, connection) {
         }
     });
 }
+
+exports.updatePassword = function (req, res) {
+    var resp = {
+        "result": "",
+        "message": ""
+    };
+
+    bcrypt.hash(req.body.password, null, null, function (err, hash) {
+        if (err) {
+            utils.handleError('registerUser - bcrypt.hash', err);
+            utils.sendError(resp, err.message, res, null);
+        }
+        else {
+            var passwordHash = hash;
+
+            utils.pool.getConnection(function (err, connection) {
+                if (err) {
+                    utils.handleError('registerUser - poolConnection', err);
+                    resp.result = "failed";
+                    resp.message = err.message;
+                    utils.sendResponse(res, resp, connection, 500);
+                }
+                else {
+                    var sql = "UPDATE user SET user_password=? WHERE user_id=?";
+                    var inserts = [passwordHash, req.body.id];
+                    sql = mysql.format(sql, inserts);
+                    connection.query(sql, function (err, result) {
+                        if (err) {
+                            utils.handleError('registerUser - insert query user', err);
+                            resp.result = "failed";
+                            resp.message = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.";
+                            utils.sendResponse(res, resp, connection, 500);
+                        }
+                        else {
+                            password.deleteSessionEntry(req.body.id);
+                            resp.result = "success";
+                            resp.message = "password_changed";
+                            utils.sendResponse(res, resp, connection, 200);
+                        }
+                    });
+                }
+            });
+        }
+    });
+};
