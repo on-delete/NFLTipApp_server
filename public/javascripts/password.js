@@ -7,18 +7,35 @@ var mysql = require('mysql');
 var exports = module.exports;
 
 var transporter = nodemailer.createTransport({
-    host: 'rocciberge.de',
-    port: 465,
-    secure: true, // secure:true for port 465, secure:false for port 587
+   service: 'gmail',
     auth: {
-        user: 'nfltipapp@rocciberge.de',
+       user: 'nfltipapp@gmail.com',
         pass: 'abitur200915'
-    },
-    debug: true,
-    tls: {rejectUnauthorized: false}
-}, {
-    from: 'NFLTipApp <noreply@rocciberge.de>'
+    }
+   //  host: 'smtp.rocciberge.de',
+   //  port: 587,
+   //  secure: false,
+   //  auth: {
+   //      user: 'nfltipappmail@rocciberge.de',
+   //      pass: '123abc'
+   //  },
+   //  tls: {
+   //      rejectUnauthorized: false
+   //  }
 });
+//     host: 'rocciberge.de',
+//     port: 465,
+//     secure: true, // secure:true for port 465, secure:false for port 587
+//     auth: {
+//         user: 'nfltipapp@rocciberge.de',
+//         pass: 'abitur200915'
+//     },
+//     debug: true,
+//     tls: {rejectUnauthorized: false}
+// }, {
+//     from: 'NFLTipApp <noreply@rocciberge.de>'
+// }
+
 
 exports.recoveryPassword = function(req, res) {
     getUserIdAndEmail(req, res);

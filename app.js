@@ -28,10 +28,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 
 /* Uncomment if automatic updates should be triggered again */
-//updateTask.startUpdateTask();
+updateTask.startUpdateTask();
+updateTask.startGameUpdatesTask();
 
-app.post('/startUpdate', function (req, res) {
+app.get('/startUpdate', function (req, res) {
     updateTask.update();
+    //updateTask.startGameUpdatesTask();
     res.end();
 });
 

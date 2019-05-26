@@ -174,7 +174,7 @@ function getPredictions(resp, res, connection, uuid) {
         "RIGHT JOIN teams as teams_away " +
         "ON games.away_team_id = teams_away.team_id " +
         "WHERE predictions.user_id = ? " +
-        "ORDER BY game_id;";
+        "ORDER BY game_datetime, game_id;";
     var inserts = [uuid];
     sql = mysql.format(sql, inserts);
     connection.query(sql, function (err, rows) {
